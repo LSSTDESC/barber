@@ -1,6 +1,7 @@
+import numpy as np
 import scipy.optimize as spo
 
-def get_cuts(galaxies, nbins=3):
+def get_cuts(galaxies, nbins=3, ivals=None):
     """
     Parameters
     ----------
@@ -11,7 +12,13 @@ def get_cuts(galaxies, nbins=3):
     -------
     bin_assignments:
         bin assignment for each galaxy
+
+    Notes
+    -----
+    sort_gals does the heavy lifting
+    eval_metric is from tomo_challenge
     """
+
     pass
 
 
