@@ -10,7 +10,7 @@ def get_cuts(galaxies, nbins=3, ivals=None):
 
     Returns
     -------
-    bin_assignments:
+    assignments:
         bin assignment for each galaxy
 
     Notes
@@ -18,15 +18,24 @@ def get_cuts(galaxies, nbins=3, ivals=None):
     sort_gals does the heavy lifting
     eval_metric is from tomo_challenge
     """
-
-    pass
+    if ivals is None:
+        ivals = np.mean(galaxies, axis=1)
+    cuts = spo.optimize(eval_metric, ivals, args=galaxies)
+    assignments = sort_gals(galaxies, cuts)
+    return(assignments)
 
 
 def sort_gals(galaxies, cuts):
     """
-    [calls to bisect]
+    [calls to bisect or sklearn decision tree, returns assignments]
     """
     pass
 
 
-# then call metric from tomo_challenge
+def eval_metric(cuts, galaxies):
+    """
+
+    """
+    assignments = sort_gals(galaxies, cuts)
+    metval = tomo_challenge.metric(assignments)
+    return metval
