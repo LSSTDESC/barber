@@ -25,9 +25,15 @@ def get_cuts(galaxies, nbins=3, ivals=None):
     return(assignments)
 
 
-def sort_gals(galaxies, cuts):
+def sort_gals(galaxies, tree):
     """
     [calls to bisect or sklearn decision tree, returns assignments]
+    Parameters
+    ----------
+
+    galaxies: nfeature x n_gal array
+
+    tree: tree object
     """
     pass
 
