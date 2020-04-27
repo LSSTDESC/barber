@@ -9,7 +9,7 @@ def main():
     T = DecisionTreeMethod(nbin,
                  training_data, training_z, 
                  validation_data, validation_z)
-    z_edges, score = T.optimize()
+    z_edges, score = T.optimize(method='Nelder-Mead', tol=0.05)
 
     z_edges = ', '.join(f'{z:.2f}' for z in z_edges)
     print(f"nbin: {nbin} score: {score}")

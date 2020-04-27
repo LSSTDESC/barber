@@ -1,5 +1,6 @@
 from .parameters import PartitionParametrization
 from tomo_challenge.metrics import compute_snr_score
+from scipy.optimize import minimize
 import numpy as np
 
 
@@ -10,8 +11,9 @@ import numpy as np
 class EdgeSpecifierMethod:
     def __init__(self, nbin,
                  training_data, training_z, 
-                 validation_data, validation_z):
+                 validation_data, validation_z, quiet=False):
         self.nbin = nbin
+        self.quiet = quiet
         # Data sets
         self.training_data = training_data
         self.training_z = training_z
@@ -43,6 +45,8 @@ class EdgeSpecifierMethod:
         return z_edges
 
     def evaluate_edges(self, bin_edges, extra_parameters):
+        if not self.quiet:
+            print(f"Edges: {bin_edges}   Extra: {extra_parameters}")
 
         # Assign each galaxy in the training data to a bin
         training_bin = np.digitize(self.training_z, bin_edges, right=True) - 1
@@ -56,6 +60,9 @@ class EdgeSpecifierMethod:
 
         # Get the score - customizable metric
         score = self.metric(bin_prediction)
+
+        if not self.quiet:
+            print(f"Score: {score}\n")
         return score
 
     def metric(self, bin_prediction):
