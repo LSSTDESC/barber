@@ -28,16 +28,18 @@ class EdgeSpecifierMethod:
 
     def __call__(self, p):
         # Split into partition parameters and any extra parameters
-        r = p[self.nbin:]
-        p = p[:self.nbin-1]
+        r = p[self.nbin - 1:]
+        p = p[:self.nbin - 1]
 
         z_edges = self.unit_parameters_to_z_edges(p)
         score = self.evaluate_edges(z_edges, r)
         return score
     
     def unit_parameters_to_z_edges(self, p):
-        if not len(p) == self.nbin - 1:
-            raise ValueError("Wrong size")
+        n1 = len(p)
+        n2 = self.nbin - 1
+        if not n1 == n2:
+            raise ValueError("Wrong size (should be {n2} but is {n1})")
         # Convert to a partition of the unit interval
         q = self.partitioner(p)
         # And convert that to a partition of zmin .. zmax
@@ -91,15 +93,15 @@ class EdgeSpecifierMethod:
         **kwargs: dict
             Any parameters to be passed to minimize
         """
-        start = [0.5 for i in range(self.nbin)]
+        start = [0.5 for i in range(self.nbin - 1)]
 
         if extra_starts is not None:
-            start = np.concatenate(start, extra_starts)
+            start = np.concatenate([start, extra_starts])
 
         res = minimize(
             lambda p: -self(p), start, **kwargs)
 
-        return self.unit_parameters_to_z_edges(res.x), -res.fun
+        return self.unit_parameters_to_z_edges(res.x[:self.nbin - 1]), -res.fun
 
 
     def train(self, training_bin, extra_parameters):
