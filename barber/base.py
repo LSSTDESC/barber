@@ -109,3 +109,35 @@ class BinClassifierMethod:
 
     def predict(self, model, training_bin):
         raise NotImplementedError("Implement the predict method in subclasses")
+
+
+class UnsupervisedClusteringMethod:
+    def __init__(self, nbin,
+                 validation_data, validation_z, quiet=False):
+        self.nbin = nbin
+        self.validation_data = validation_data
+        self.validation_z = validation_z
+
+    def run(self):
+        bins = self.cluster(self.validation_data)
+        return self.metric(bin_prediction)
+
+    def metric(self, bin_prediction):
+        """Compute a metric for fitting.
+
+        Currently this uses the tomo challenge metric.
+
+        Parameters
+        ----------
+        bin_prediction: array
+            integer bin choice for each object in the validation
+            sample. Can be -1 for no choice
+
+        Returns
+        -------
+        score: float
+        """
+        return compute_snr_score(bin_prediction, self.validation_z)
+
+    def cluster(self, data):
+        raise NotImplementedError("Implement the  method in subclasses")

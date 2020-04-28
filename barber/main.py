@@ -1,6 +1,6 @@
 from .data import load
 from .tree import DecisionTreeMethod
-
+from .gmm import GaussianMixtureMethod
 
 def main():
     training_data, training_z = load('training', thin=100)
@@ -15,6 +15,13 @@ def main():
     print(f"nbin: {nbin} score: {score}")
     print(f"z: {z_edges}")
 
+
+def main2():
+    validation_data, validation_z = load('validation')
+    nbin = 4
+    G = GaussianMixtureMethod(nbin, validation_data, validation_z)
+    score = G.run()
+    print(f'GMM score: {score}')
 
 if __name__ == '__main__':
     main()
