@@ -7,7 +7,7 @@ import numpy as np
 # It first maps nbin-1 parameters to the partition using a Splitter
 # It makes a Decision Tree to fit to that splitting, and then applies it to training data,
 # and then runs the challenge metric
-class EdgeSpecifierMethod:
+class BinClassifierMethod:
     def __init__(self, nbin,
                  training_data, training_z, 
                  validation_data, validation_z):

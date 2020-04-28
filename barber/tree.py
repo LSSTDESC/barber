@@ -1,7 +1,7 @@
-from .base import EdgeSpecifierMethod
+from .base import BinClassifierMethod
 from sklearn.tree import DecisionTreeClassifier
 
-class DecisionTreeMethod(EdgeSpecifierMethod):
+class DecisionTreeMethod(BinClassifierMethod):
 
     def __init__(self, *args, **kwargs):
         self.max_depth = kwargs.pop('max_depth', None)
