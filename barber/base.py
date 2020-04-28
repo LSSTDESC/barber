@@ -1,5 +1,6 @@
 from .parameters import PartitionParametrization
 from tomo_challenge.metrics import compute_snr_score
+from scipy.optimize import minimize
 import numpy as np
 
 
@@ -10,8 +11,9 @@ import numpy as np
 class BinClassifierMethod:
     def __init__(self, nbin,
                  training_data, training_z, 
-                 validation_data, validation_z):
+                 validation_data, validation_z, quiet=False):
         self.nbin = nbin
+        self.quiet = quiet
         # Data sets
         self.training_data = training_data
         self.training_z = training_z
@@ -26,16 +28,18 @@ class BinClassifierMethod:
 
     def __call__(self, p):
         # Split into partition parameters and any extra parameters
-        r = p[self.nbin:]
-        p = p[:self.nbin-1]
+        r = p[self.nbin - 1:]
+        p = p[:self.nbin - 1]
 
         z_edges = self.unit_parameters_to_z_edges(p)
         score = self.evaluate_edges(z_edges, r)
         return score
     
     def unit_parameters_to_z_edges(self, p):
-        if not len(p) == self.nbin - 1:
-            raise ValueError("Wrong size")
+        n1 = len(p)
+        n2 = self.nbin - 1
+        if not n1 == n2:
+            raise ValueError("Wrong size (should be {n2} but is {n1})")
         # Convert to a partition of the unit interval
         q = self.partitioner(p)
         # And convert that to a partition of zmin .. zmax
@@ -43,6 +47,8 @@ class BinClassifierMethod:
         return z_edges
 
     def evaluate_edges(self, bin_edges, extra_parameters):
+        if not self.quiet:
+            print(f"Edges: {bin_edges}   Extra: {extra_parameters}")
 
         # Assign each galaxy in the training data to a bin
         training_bin = np.digitize(self.training_z, bin_edges, right=True) - 1
@@ -56,6 +62,9 @@ class BinClassifierMethod:
 
         # Get the score - customizable metric
         score = self.metric(bin_prediction)
+
+        if not self.quiet:
+            print(f"Score: {score}\n")
         return score
 
     def metric(self, bin_prediction):
@@ -84,15 +93,15 @@ class BinClassifierMethod:
         **kwargs: dict
             Any parameters to be passed to minimize
         """
-        start = [0.5 for i in range(self.nbin)]
+        start = [0.5 for i in range(self.nbin - 1)]
 
         if extra_starts is not None:
-            start = np.concatenate(start, extra_starts)
+            start = np.concatenate([start, extra_starts])
 
         res = minimize(
             lambda p: -self(p), start, **kwargs)
 
-        return self.unit_parameters_to_z_edges(res.x), -res.fun
+        return self.unit_parameters_to_z_edges(res.x[:self.nbin - 1]), -res.fun
 
 
     def train(self, training_bin, extra_parameters):
