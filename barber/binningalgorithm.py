@@ -1,4 +1,4 @@
-# Any algorithm for assigning galaxies to "bins" should share a unified API defined by this superclass
+# Superclass for any algorithm for assigning galaxies to "bins" should share a unified API defined by this superclass
 
 import numpy as np
 import tomo_challenge as tc
@@ -11,6 +11,7 @@ class BinningAlgorithm:
         self.vb = quiet
         self.n_bins = None
         self.metric = None
+        self.hyperparams = None
 
     def assess(self, bin_assignments, metric=(compute_snr_score, **args)):
         """
@@ -60,29 +61,16 @@ class BinningAlgorithm:
         Notes
         -----
         For a supervised classifier, this method would wrap the `predict()` function.
-        For an unsupervised classifier, this method would wrap the `fit()` function and possibly define `n_bins`.
+        For an unsupervised classifier or optimizer, this method would wrap the `fit()` function and possibly define `n_bins`.
+        Either way, the contents of this method will likely access `self.hyperparams` defined by `self.inform()`.
         """
-        pass
+        raise NotImplementedError("Implement the `assign()` method in subclasses")
+        # return(bin_assignments)
 
     def inform(self, training_data, training_target, **kwargs):
         """
-        Ingests any data used to train or define a prior
+        Employs any information used to train or define a prior
 
-        Parameters
-        ----------
-        training_data: numpy.ndarray, float
-            (n_galaxies, n_features) array of training data
-        training_target: numpy.ndarray, int
-            (n_galaxies) array of target values of training set
-
-        Notes
-        -----
-        For a supervised classifier, this method would wrap the training function that calls the `self.assess()` method and would define `self.n_bins` from the number of unique values in training_target.
-        """
-        pass
-
-    def validate(self, validation_data, validation_target):
-        """
         Parameters
         ----------
         training_data: numpy.ndarray, float
@@ -92,8 +80,36 @@ class BinningAlgorithm:
 
         Returns
         -------
-        score:
-        bin_assignments:
+        self.assign(): method
+            the function that assigns bin numbers to galaxies
+
+        Notes
+        -----
+        For a supervised classifier, this method would wrap the training function that calls the `self.assess()` method and would define `self.n_bins` from the number of unique values in training_target.
+        The `**kwargs` may include tuning parameters of the training process.
+        The hyperparameters of the trained model would be rolled into `self.hyperparams` that would then be accessed by the `self.assign()` method.
+        """
+        raise NotImplementedError("Implement the `inform()` method in subclasses")
+        # self.hyperparams =
+        # return(self.assign())
+
+    def validate(self, validation_data, validation_target):
+        """
+        A shortcut to `assign()` and then `assess()` on data with known truth
+
+        Parameters
+        ----------
+        validation_data: numpy.ndarray, float
+            (n_galaxies, n_features) array of validation data
+        validation_target: numpy.ndarray, int
+            (n_galaxies) array of redshift values of validation set
+
+        Returns
+        -------
+        score: float
+            metric value
+        bin_assignments: numpy.ndarray, int
+            (n_galaxies) array of bin assignments
 
         Notes
         -----
