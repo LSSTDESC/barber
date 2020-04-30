@@ -42,8 +42,10 @@ class BinClassifierMethod:
             raise ValueError("Wrong size (should be {n2} but is {n1})")
         # Convert to a partition of the unit interval
         q = self.partitioner(p)
-        # And convert that to a partition of zmin .. zmax
-        z_edges = np.concatenate([[self.zmin], self.zmin + self.zrange * np.cumsum(q)])
+        # And convert that to a partition of zmin .. zmax.  Add a small delta to each side so
+        # that all objects are included
+        z_edges = np.concatenate([[self.zmin-1e-6], self.zmin + self.zrange * np.cumsum(q)])
+        z_edges[-1] += 1e-6
         return z_edges
 
     def evaluate_edges(self, bin_edges, extra_parameters):
@@ -82,6 +84,10 @@ class BinClassifierMethod:
         -------
         score: float
         """
+        counts = np.bincount(bin_prediction)
+        for i, c in enumerate(counts):
+            print(f"{c} objects in bin {i}")
+        
         return compute_snr_score(bin_prediction, self.validation_z)
 
     def optimize(self, extra_starts=None, **kwargs):
@@ -101,7 +107,34 @@ class BinClassifierMethod:
         res = minimize(
             lambda p: -self(p), start, **kwargs)
 
-        return self.unit_parameters_to_z_edges(res.x[:self.nbin - 1]), -res.fun
+        return self.unit_parameters_to_z_edges(res.x[:self.nbin - 1]), res.x[self.nbin-1:], -res.fun
+
+    def bins_with_threshold(self, probability, min_probability):
+        """
+        Turn a probabillity per bin per object into a choice of bins,
+        where objects whose highest probability is still below the
+        threshold are assigned a new bin, above all the rest.
+
+        This could be a utility with nbin as a third input.
+
+        Parameters
+        ----------
+        probability: array n_gal x n_bin
+            estimated probability of each galaxy being in each bin
+        min_probability: float
+            A threshold value below which galaxies are deemed too
+            ambiguous to put in their primary bin and are relagated to a new one.
+
+        """
+        bins = np.argmax(probability, axis=1)
+        # There must be a fancy indexing way of doing this
+        best_p = np.array([probability[i,b] for i,b in enumerate(bins)])
+        reject = best_p < min_probability
+        n_reject = reject.sum()
+        reject_fraction = n_reject / reject.size
+        print(f"{n_reject} objects ({reject_fraction:.2%}) fail purity test")
+        bins[reject] = self.nbin
+        return bins
 
 
     def train(self, training_bin, extra_parameters):
