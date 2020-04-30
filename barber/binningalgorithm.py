@@ -4,26 +4,36 @@ import numpy as np
 import tomo_challenge as tc
 from tc.metrics import compute_snr_score
 
-class BinningAlgorithm:
-    def __init__(self, quiet=False):
+class BinningAlgorithm(object):
+    """
+    A superclass for any algorithm that defines and executes a tomographic binning scheme
+    """
+    def __init__(self, hyperparams=None, quiet=False):
         """
+        Parameters
+        ----------
+        hyperparams: dictionary, optional
+            optional parameters for initializing from a saved subclass instance
+        quiet: boolean, optional
+            suppresses progress updates to stdout
+
+        Notes
+        -----
+        There should also be a generic ingestion method to unpack the `hyperparams` dictionary into subclass attributes.
         """
-        self.vb = quiet
+        self.hyperparams = hyperparams
         self.n_bins = None
         self.metric = None
-        self.hyperparams = None
 
     def assess(self, bin_assignments, metric=(compute_snr_score, **args)):
         """
-        Evaluates a metric or objective function to optimize
-
-        Currently this uses the tomo challenge metric.
+        Evaluates a metric or objective function to optimize, currently restricted to the tomo challenge metric
 
         Parameters
         ----------
         bin_assignments: numpy.ndarray, int
             integer bin choice for each object being assessed
-        metric: tuple, (tomo_challenge.Metric object, **kwargs), optional
+        metric: tuple, (tomo_challenge.Metric object, **args), optional
             a metric provided by the `tomo_challenge` and any parameters it requires beyond the bin assignments, such as true values of the redshifts
 
         Returns
