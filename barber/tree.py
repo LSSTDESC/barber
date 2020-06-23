@@ -1,5 +1,6 @@
-from .base import BinningAlgorithm
+from .binningalgorithm import BinningAlgorithm
 from sklearn.tree import DecisionTreeClassifier
+import numpy as np
 #
 # # class DecisionTreeMethod(BinClassifierMethod):
 #
@@ -40,7 +41,7 @@ class DecisionTree(BinningAlgorithm):
         Notes
         -----
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(max_depth=max_depth, purity_test=purity_test, quiet=quiet)
         self.n_bins = n_bins
 
     def assign(self, testing_data, min_p=None):
@@ -97,9 +98,8 @@ class DecisionTree(BinningAlgorithm):
         The `**kwargs` may include tuning parameters of the training process.
         The hyperparameters of the trained model would be rolled into `self.hyperparams` that would then be accessed by the `self.assign()` method.
         """
-        data = np.hstack(training_data, training_target)
         tree = DecisionTreeClassifier(max_depth=self.max_depth)
-        tree.fit(data, self.n_bins)
+        tree.fit(training_data, training_target)
         self.informed = tree
         return tree
 
