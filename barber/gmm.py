@@ -1,10 +1,15 @@
-from .base import UnsupervisedClusteringMethod
+from .binningalgorithm import BinningAlgorithm
+from sklearn import mixture
 
+class GaussianMixtureMethod(BinningAlgorithm):
 
-class GaussianMixtureMethod:
-    def cluster(self, data):
-        model = mixture.GaussianMixture(n_components=self.nbin,
+    def inform(self, training_data, training_target, **kwargs):
+        # as an unsupervised method, inform does nothing
+        pass
+
+    def assign(self, test_data, n_bins=None):
+        model = mixture.GaussianMixture(n_components=n_bins,
                                         covariance_type='full')
-        Y = model.fit_predict(data)
+        Y = model.fit_predict(test_data)
 
         return Y
