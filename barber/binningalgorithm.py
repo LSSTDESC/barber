@@ -23,7 +23,7 @@ class BinningAlgorithm(object):
         self.n_bins = None
         self.metric = None
 
-    def assess(self, bin_assignments, metric=(compute_snr_score, **args)):
+    def assess(self, bin_assignments, metric=None:
         """
         Evaluates a metric or objective function to optimize, currently restricted to the tomo challenge metric
 
@@ -46,8 +46,8 @@ class BinningAlgorithm(object):
         I suspect the syntax of `**args` appearing in the `metric` input parameters is not kosher and, regardless, should probably be replaced with a dictionary.
         """
         if self.metric is None:
-            self.metric = metric[0]
-        score = self.metric(bin_assignments, **args)
+            self.metric = compute_snr_score
+        score = self.metric(bin_assignments)
         return(score)
 
     def assign(self, test_data, n_bins=None):
