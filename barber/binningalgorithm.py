@@ -23,7 +23,7 @@ class BinningAlgorithm(object):
         self.n_bins = None
         self.metric = None
 
-    def assess(self, bin_assignments, metric=None:
+    def assess(self, bin_assignments, metric=None):
         """
         Evaluates a metric or objective function to optimize, currently restricted to the tomo challenge metric
 
