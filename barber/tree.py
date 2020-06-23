@@ -40,7 +40,7 @@ class DecisionTree(BinningAlgorithm):
         Notes
         -----
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(n_bins, max_depth, purity_test)
         self.n_bins = n_bins
 
     def assign(self, testing_data, min_p=None):
@@ -67,7 +67,7 @@ class DecisionTree(BinningAlgorithm):
         """
         tree = self.informed
 
-        if self.purity_test:
+        if self.hyperparams['purity_test']:
             p = tree.predict_proba(testing_data)
             bin_assignments = self._bins_with_threshold(p, min_p)
         else:
@@ -98,7 +98,7 @@ class DecisionTree(BinningAlgorithm):
         The hyperparameters of the trained model would be rolled into `self.hyperparams` that would then be accessed by the `self.assign()` method.
         """
         data = np.hstack(training_data, training_target)
-        tree = DecisionTreeClassifier(max_depth=self.max_depth)
+        tree = DecisionTreeClassifier(max_depth=self.hyperparams['max_depth'])
         tree.fit(data, self.n_bins)
         self.informed = tree
         return tree
