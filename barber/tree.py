@@ -68,7 +68,7 @@ class DecisionTree(BinningAlgorithm):
         """
         tree = self.informed
 
-        if self.purity_test:
+        if self.hyperparams['purity_test']:
             p = tree.predict_proba(testing_data)
             bin_assignments = self._bins_with_threshold(p, min_p)
         else:
@@ -76,7 +76,7 @@ class DecisionTree(BinningAlgorithm):
 
         return bin_assignments
 
-    def inform(self, training_data, training_target):
+    def inform(self, training_data, training_z):
         """
         Employs any information used to train or define a prior
 
@@ -98,7 +98,8 @@ class DecisionTree(BinningAlgorithm):
         The `**kwargs` may include tuning parameters of the training process.
         The hyperparameters of the trained model would be rolled into `self.hyperparams` that would then be accessed by the `self.assign()` method.
         """
-        tree = DecisionTreeClassifier(max_depth=self.max_depth)
+        training_bin = ff(training_z)
+        tree = DecisionTreeClassifier(max_depth=self.hyperparams['max_depth'])
         tree.fit(training_data, training_target)
         self.informed = tree
         return tree
