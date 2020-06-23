@@ -1,4 +1,4 @@
-from .base import BinClassifierMethod
+from .base import BinningAlgorithm
 from sklearn.tree import DecisionTreeClassifier
 #
 # # class DecisionTreeMethod(BinClassifierMethod):
