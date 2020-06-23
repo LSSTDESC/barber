@@ -1,6 +1,6 @@
-from .base import BinClassifierMethod
+from .base import BinningAlgorithm
 from sklearn.tree import DecisionTreeClassifier
-# 
+#
 # # class DecisionTreeMethod(BinClassifierMethod):
 #
 #     # def __init__(self, *args, **kwargs):
@@ -26,11 +26,9 @@ from sklearn.tree import DecisionTreeClassifier
 
 class DecisionTree(BinningAlgorithm):
     """
-    Temporary wrapper for `barber.base.BinClassifierMethod` to demonstrate correspondence
+    DecisionTree classifier as subclass of BinningAlgorithm
     """
-    def __init__(self, nbin,
-                 training_data, training_z,
-                 validation_data, validation_z,
+    def __init__(self, n_bins,
                  max_depth=False, purity_test=False,
                  quiet=False):
         """
@@ -43,37 +41,7 @@ class DecisionTree(BinningAlgorithm):
         -----
         """
         super().__init__(*args, **kwargs)
-        # self.hyperparams = {'nbin': nbin,
-        #                     'training_data': training_data,
-        #                     'training_z': training_z,
-        #                     'validation_data': validation_data,
-        #                     'validation_z': validation_z}
-        # self.n_bins = None
-        # self.metric = BinClassifierMethod(nbin,
-        #              training_data, training_z,
-        #              validation_data, validation_z, quiet=False)).metric()
-
-    # def assess(self, bin_assignments):
-    #     """
-    #     Evaluates a metric or objective function to optimize, currently restricted to the tomo challenge metric
-    #
-    #     Parameters
-    #     ----------
-    #     bin_assignments: numpy.ndarray, int
-    #         integer bin choice for each object being assessed
-    #     metric: tuple, (tomo_challenge.Metric object, **args), optional
-    #         a metric provided by the `tomo_challenge` and any parameters it requires beyond the bin assignments, such as true values of the redshifts
-    #
-    #     Returns
-    #     -------
-    #     score: float
-    #         the value of the metric or objective function
-    #
-    #     Notes
-    #     -----
-    #     """
-    #     score = self.metric(bin_assignments)
-    #     return(score)
+        self.n_bins = n_bins
 
     def assign(self, testing_data, min_p=None):
         """
@@ -83,8 +51,8 @@ class DecisionTree(BinningAlgorithm):
         ----------
         testing_data: numpy.ndarray, float
             (n_galaxies, n_features) array of test data
-        n_bins: int, optional
-            the number of bins, if it is not informed by test data nor fit by the algorithm itself
+        min_p: float, optional
+            probability threshold
 
         Returns
         -------
@@ -97,18 +65,17 @@ class DecisionTree(BinningAlgorithm):
         For an unsupervised classifier or optimizer, this method would wrap the `fit()` function and possibly define `n_bins`.
         Either way, the contents of this method will likely access `self.hyperparams` defined by `self.inform()`.
         """
-        # def predict(self, tree, data, extra_parameters):
         tree = self.informed
 
         if self.purity_test:
-            p = self.tree.predict_proba(testing_data)
+            p = tree.predict_proba(testing_data)
             bin_assignments = self._bins_with_threshold(p, min_p)
         else:
             bin_assignments = tree.predict(testing_data)
 
         return bin_assignments
 
-    def inform(self, training_data=None, training_target=None, n_bins=2, **kwargs):
+    def inform(self, training_data, training_target):
         """
         Employs any information used to train or define a prior
 
@@ -132,7 +99,7 @@ class DecisionTree(BinningAlgorithm):
         """
         data = np.hstack(training_data, training_target)
         tree = DecisionTreeClassifier(max_depth=self.max_depth)
-        tree.fit(data, n_bins)
+        tree.fit(data, self.n_bins)
         self.informed = tree
         return tree
 
