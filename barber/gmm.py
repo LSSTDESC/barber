@@ -7,8 +7,8 @@ class GaussianMixtureMethod(BinningAlgorithm):
         # as an unsupervised method, inform does nothing
         pass
 
-    def assign(self, test_data, n_bins=None):
-        model = mixture.GaussianMixture(n_components=n_bins,
+    def assign(self, test_data):
+        model = mixture.GaussianMixture(n_components=self.n_bins,
                                         covariance_type='full')
         Y = model.fit_predict(test_data)
 

@@ -15,13 +15,17 @@ class PartitionParametrization:
     intervals uniformly distributed within the volume that has the
     correct sum.
     """
-    def __init__(self, n, size=1_000_000, npoint=100):
+    def __init__(self, n, size=1_000_000, npoint=100, inf_bounds=True):
         """Initialize the partition generator.
 
         Parameters
         ----------
         n: int
             The number of partition
+
+        inf_bounds: bool
+            Map input parameters from (-inf, inf) range -> edges
+            instead of (0, 1) range -> edges
         """
         self.n = n
         # We want something uniform so use alpha=1 for all distributions
@@ -54,6 +58,11 @@ class PartitionParametrization:
             for d in ds
         ]
 
+        self.inf_bounds = inf_bounds
+
+    def remap(self, q):
+        return 0.5 * (1 + np.tanh(q))
+
     def __call__(self, q):
         """Convert n - 1 parameters to the n subdivions
 
@@ -64,6 +73,8 @@ class PartitionParametrization:
 
         """
         # total partition size
+        if self.inf_bounds:
+            q = self.remap(q)
         r = 1.0
         y = np.zeros(self.n)
         # for each variable, get the CDF of the flat Dirichlet

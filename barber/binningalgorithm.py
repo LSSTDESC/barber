@@ -12,7 +12,7 @@ class BinningAlgorithm(object):
     """
     A superclass for any algorithm that defines and executes a tomographic binning scheme
     """
-    def __init__(self, quiet=False, *args, **kwargs):
+    def __init__(self, n_bins, quiet=False, *args, **kwargs):
         """
         Parameters
         ----------
@@ -25,7 +25,8 @@ class BinningAlgorithm(object):
         """
         self.hyperparams = kwargs
         self.metric = compute_snr_score
-        self.n_bins = None
+        self.n_bins = n_bins
+        self.quiet = quiet
 
     def assess(self, bin_assignments, redshifts, metric=None):
         """
@@ -54,7 +55,7 @@ class BinningAlgorithm(object):
         score = metric(redshifts, bin_assignments)
         return score
 
-    def assign(self, test_data, n_bins=None):
+    def assign(self, test_data):
         """
         Assigns bins to galaxies
 
@@ -129,6 +130,6 @@ class BinningAlgorithm(object):
         To work generically, it should include a check that `self.metric` has already been defined and whether it requires `validation_target` or any other arguments.
         Also, the returned parameters might be better off as a `NamedTuple`.
         """
-        bin_assignments = self.assign(validation_data, n_bins=self.n_bins)
+        bin_assignments = self.assign(validation_data)
         score = self.assess(bin_assignments, validation_target)
         return((score, bin_assignments))
