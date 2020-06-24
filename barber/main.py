@@ -1,49 +1,38 @@
-from .data import load
-from .tree import DecisionTreeMethod
-from .gmm import GaussianMixtureMethod
+import sys
+sys.path.append("../tomo_challenge")
+from . import gmm
+from . import tree
+import tomo_challenge
 
 def main():
-    training_data, training_z = load('training', thin=100)
-    validation_data, validation_z = load('validation')
-    nbin = 4
+    d1 = tomo_challenge.load_data("../tomo_challenge/data/training.hdf5", 
+                                    "riz",
+                                    colors=True,
+                                    array=True)
+    z1 = tomo_challenge.load_redshift("../tomo_challenge/data/training.hdf5")
 
-    # use a purity requirement for main bins
-    purity_test = True
+    d2 = tomo_challenge.load_data("../tomo_challenge/data/validation.hdf5",
+                                  "riz",
+                                  colors=True,
+                                  array=True)
 
-    # number of steps in the tree.
-    # try to avoid over-fitting
-    max_depth = 20
-    
-    # starting value for purity requirement for main bins.
-    # Indicates the classifier should be at least 90% sure of the
-    # classification
-    purity_guess = [0.5]
-
-    # Initialize the classifier
-    T = DecisionTreeMethod(nbin,
-                           training_data, training_z, 
-                           validation_data, validation_z,
-                           purity_test=purity_test,
-                           max_depth=max_depth
-    )
-
-    # Run the optimizer
-    z_edges, rej_param, score = T.optimize(extra_starts=purity_guess,
-                                           method='Nelder-Mead',
-                                           tol=0.01)
-
-    z_edges = ', '.join(f'{z:.2f}' for z in z_edges)
-    print(f"nbin: {nbin} score: {score}")
-    print(f"z: {z_edges}")
-    print(f"rejection threshold: {rej_param}")
+    z2 = tomo_challenge.load_redshift("../tomo_challenge/data/validation.hdf5")
 
 
-def main2():
-    validation_data, validation_z = load('validation')
-    nbin = 4
-    G = GaussianMixtureMethod(nbin, validation_data, validation_z)
-    score = G.run()
-    print(f'GMM score: {score}')
+
+    for nbin in range(3, 9):
+        method = gmm.GaussianMixtureMethod(n_bins = nbin)
+        method.inform(d1, z1) # no-op
+        score, _ = method.validate(d2, z2)
+        print('GMM', nbin, score)
+
+
+    for nbin in range(3, 9):
+        method = tree.DecisionTree(n_bins = nbin)
+        method.inform(d1, z1)
+        score, _ = method.validate(d2, z2)
+        print('Tree\n', nbin, score)
+
 
 if __name__ == '__main__':
     main()
